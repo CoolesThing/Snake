@@ -54,20 +54,22 @@ class GameLogic:
         self.grid = Cell.create_grid(rows, cols)
         self.rows = rows
         self.cols = cols
-        self.snake = [(5, 5), (5, 6), (5, 7)]  # Initial snake position
+        self.snake = [(5, 8), (4, 8), (3, 8)]  # Initial snake position
         self.direction = (1, 0)  # Initial direction (right)
+        self.last_action = None
         self.last_move_time = 0
         self.move_delay = 200  # milliseconds between moves (1000 ms / 5 moves per second)
-
+        self.score = 0
         pass
     
+    def place_apple(self):
+        import random
+        empty_cells = [(x, y) for y in range(1, self.rows - 1) for x in range(1, self.cols - 1) if self.grid[y][x].empty]
+        if empty_cells:
+            x, y = random.choice(empty_cells)
+            self.grid[y][x].set_apple()
+    
     def move_snake(self, snake, direction):
-        
-        # sell all cell to snake=false
-        for row in self.grid:
-            for cell in row:
-                if cell.snake:
-                    cell.set_empty()
 
         #direction[0] = dx, direction[1] = dy, snake = [(x1,y1), (x2,y2), ...], snake[0][0] = x1, snake[0][1] = y1
         new_head = (snake[0][0] + direction[0], snake[0][1] + direction[1]) 
@@ -75,8 +77,20 @@ class GameLogic:
         x, y = new_head
         if self.grid[y][x].apple:
             new_snake = [new_head] + snake[:]
+            self.score += 1
+        elif self.grid[y][x].wall or self.grid[y][x].snake:
+            print("Game Over! Final Score:", self.score)
+            pygame.quit()
+            exit()
+            raise SystemExit
         else:
             new_snake = [new_head] + snake[:-1]
+            
+        # sell all cell to snake=false
+        for row in self.grid:
+            for cell in row:
+                if cell.snake:
+                    cell.set_empty()
         
         for x, y in new_snake:
             self.grid[y][x].set_snake()
@@ -98,23 +112,32 @@ class GameLogic:
             exit()
             raise SystemExit   
         
+        # spwan apple if there is none
+        if not any(cell.apple for row in self.grid for cell in row):
+            self.place_apple()
+        
         if keys[pygame.K_a]:
             print("Left key pressed")
-            self.direction = (-1, 0)  # Move left
+            if(self.last_action != (1, 0)): #prevent the snake from going back on itself
+                self.direction = (-1, 0)  # Move left
         if keys[pygame.K_d]:
             print("Right key pressed")
-            self.direction = (1, 0)   # Move right
+            if(self.last_action != (-1, 0)): #prevent the snake from going back on itself
+                self.direction = (1, 0)   # Move right
         if keys[pygame.K_w]:
             print("Up key pressed")
-            self.direction = (0, -1)  # Move up
+            if(self.last_action != (0, 1)): #prevent the snake from going back on itself
+                self.direction = (0, -1)  # Move up
         if keys[pygame.K_s]:
             print("Down key pressed")
-            self.direction = (0, 1)   # Move down     
+            if(self.last_action != (0, -1)): #prevent the snake from going back on itself
+                self.direction = (0, 1)   # Move down     
         
-        # Move the snake only if enough time has passed
+        # Move the snake only if enough time has passed & 
         if current_time - self.last_move_time >= self.move_delay:
             self.snake = self.move_snake(self.snake, self.direction)
-            self.last_move_time = current_time
+            self.last_move_time = current_time 
+            self.last_action = self.direction # Update last action to current direction, used to prevent reversing direction
 
 #width 600; height 530;
 # 17 x 15; 17 across the top and 15 down the side
