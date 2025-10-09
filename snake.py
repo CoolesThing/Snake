@@ -16,7 +16,7 @@ pygame.display.set_caption("Snake Game")
 clock = pygame.time.Clock()
 
 def main():
-    cell = Cell()
+    cell = Cell(row, col)
     game_logic = GameLogic(row, col)
     input_handler = InputHandler()
     renderer = Renderer()
@@ -28,11 +28,8 @@ def main():
                 exit()
                 raise SystemExit
         input_data = input_handler.get_input()
-        game_logic.update(input_data)
-        renderer.render(screen, cell.create_grid(row, col), cell_size)
-        #do logic updates
-        #render graphics
-
+        game_logic.update(input_data)#do logic updates
+        renderer.render(screen, game_logic.grid, cell_size)#render graphics
         pygame.display.flip()   #update the full display Surface to the screen
         clock.tick(60)          #wait until next frame(60fps)
 

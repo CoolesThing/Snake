@@ -15,8 +15,10 @@ class Renderer:
                     color = (170, 215, 81)  # Alternate color for checkerboard effect
                 if cell.apple:
                     color = (255, 0, 0)  # Red for apple
-                elif cell.snake:
+                if cell.snake:
                     color = (0, 255, 0)  # Green for snake
+                elif cell.wall:
+                    color = (87, 138, 52)  # Dark green for wall
                 pygame.draw.rect(screen, color, (x, y, cell_size, cell_size))
                 #pygame.draw.rect(screen, (167, 213, 78), (x, y, cell_size, cell_size), 1)  # Cell border
         
@@ -28,3 +30,4 @@ class Renderer:
 #light green box: 170, 215, 81
 #header: 74, 117, 44
 #lines: 167, 213, 78
+#wall: 87, 138, 52
