@@ -5,7 +5,7 @@ class Renderer:
         #make the header
         pygame.draw.rect(screen, (74, 117, 44), (0, 0, screen.get_width(), 70))  # Dark green header
         
-        #Make the background
+        #Handle drawing the grid + recoloring cells
         for row_iidx, row in enumerate(grid): #enumerate() adds a counter to an iterable and returns it in a form of enumerating object: "index, value"
             for col_idx, cell in enumerate(row):
                 x = col_idx * cell_size
@@ -16,11 +16,10 @@ class Renderer:
                 if cell.apple:
                     color = (255, 0, 0)  # Red for apple
                 if cell.snake:
-                    color = (0, 255, 0)  # Green for snake
+                    color = (77, 123, 227)  # Green for snake
                 elif cell.wall:
                     color = (87, 138, 52)  # Dark green for wall
                 pygame.draw.rect(screen, color, (x, y, cell_size, cell_size))
-                #pygame.draw.rect(screen, (167, 213, 78), (x, y, cell_size, cell_size), 1)  # Cell border
         
 #copy() will return a new rectangle having the same position and size as the original!
 #move() retuns a new rectangle that is moved by the given offest 

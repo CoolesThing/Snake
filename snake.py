@@ -27,6 +27,7 @@ def main():
                 pygame.quit()
                 exit()
                 raise SystemExit
+        #main game loop    
         input_data = input_handler.get_input()
         game_logic.update(input_data)#do logic updates
         renderer.render(screen, game_logic.grid, cell_size)#render graphics
