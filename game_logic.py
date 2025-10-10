@@ -60,8 +60,27 @@ class GameLogic:
         self.last_move_time = 0
         self.move_delay = 200  # milliseconds between moves (1000 ms / 5 moves per second)
         self.score = 0
+        self.isalive = True
         pass
     
+    def start_game(self, input_data, rows, cols):
+        #enter the main game loop
+        if any(input_data['keys']):
+            self.isalive = True
+            self.grid = Cell.create_grid(rows, cols)
+            self.rows = rows
+            self.cols = cols
+            self.snake = [(5, 8), (4, 8), (3, 8)]  # Initial snake position
+            self.direction = (1, 0)  # Initial direction (right)
+            self.last_action = None
+            self.last_move_time = 0
+            self.move_delay = 200  # milliseconds between moves (1000 ms / 5 moves per second)
+            self.score = 0
+            return self.isalive
+    
+    def snake_state(self):
+        return self.isalive
+
     def place_apple(self):
         import random
         empty_cells = [(x, y) for y in range(1, self.rows - 1) for x in range(1, self.cols - 1) if self.grid[y][x].empty]
@@ -70,8 +89,6 @@ class GameLogic:
             self.grid[y][x].set_apple()
     
     def move_snake(self, snake, direction):
-
-        #direction[0] = dx, direction[1] = dy, snake = [(x1,y1), (x2,y2), ...], snake[0][0] = x1, snake[0][1] = y1
         new_head = (snake[0][0] + direction[0], snake[0][1] + direction[1]) 
         
         x, y = new_head
@@ -80,9 +97,8 @@ class GameLogic:
             self.score += 1
         elif self.grid[y][x].wall or self.grid[y][x].snake:
             print("Game Over! Final Score:", self.score)
-            pygame.quit()
-            exit()
-            raise SystemExit
+            self.isalive = False
+            new_snake = snake[:]
         else:
             new_snake = [new_head] + snake[:-1]
             
@@ -104,8 +120,6 @@ class GameLogic:
         mouse_buttons = input_data['mouse_buttons']
         current_time = pygame.time.get_ticks()
         
-        #print(f"Mouse Position: {mouse_pos}, Mouse Buttons: {mouse_buttons}")
-        
         # Exit the game if ESC is pressed
         if keys[pygame.K_ESCAPE]:
             pygame.quit()
@@ -117,19 +131,15 @@ class GameLogic:
             self.place_apple()
         
         if keys[pygame.K_a]:
-            print("Left key pressed")
             if(self.last_action != (1, 0)): #prevent the snake from going back on itself
                 self.direction = (-1, 0)  # Move left
         if keys[pygame.K_d]:
-            print("Right key pressed")
             if(self.last_action != (-1, 0)): #prevent the snake from going back on itself
                 self.direction = (1, 0)   # Move right
         if keys[pygame.K_w]:
-            print("Up key pressed")
             if(self.last_action != (0, 1)): #prevent the snake from going back on itself
                 self.direction = (0, -1)  # Move up
         if keys[pygame.K_s]:
-            print("Down key pressed")
             if(self.last_action != (0, -1)): #prevent the snake from going back on itself
                 self.direction = (0, 1)   # Move down     
         
@@ -138,6 +148,3 @@ class GameLogic:
             self.snake = self.move_snake(self.snake, self.direction)
             self.last_move_time = current_time 
             self.last_action = self.direction # Update last action to current direction, used to prevent reversing direction
-
-#width 600; height 530;
-# 17 x 15; 17 across the top and 15 down the side
