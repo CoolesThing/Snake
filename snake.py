@@ -2,6 +2,7 @@ import pygame
 from input_handler import InputHandler
 from game_logic import GameLogic, Cell
 from renderer import Renderer
+from evo_comp import Bot
 
 
 pygame.init()
@@ -19,6 +20,7 @@ def main():
     game_logic = GameLogic(row, col)
     input_handler = InputHandler()
     renderer = Renderer()
+    bot = Bot()
     alive = False
     
     while True:
@@ -44,7 +46,7 @@ def main():
                     pygame.quit()
                     exit()
                     raise SystemExit 
-            input_data = input_handler.get_input()
+            input_data = bot.get_input(game_logic)#input_handler.get_input()
             game_logic.update(input_data)#do logic updates
             alive = game_logic.snake_state()#check if game over
             renderer.render(screen, game_logic.grid, cell_size)#render graphics
