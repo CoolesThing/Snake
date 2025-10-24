@@ -21,7 +21,6 @@ class Bot:
 
 		# If bot is off, just return the real input so the user can start the game
 		if not self.enabled:
-			print("Bot is disabled.")
 			return {
 				'keys': real_keys,
 				'mouse_pos': pygame.mouse.get_pos(),
