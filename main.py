@@ -75,7 +75,7 @@ class SnakeGame:
         run = True
         clock = pygame.time.Clock()
         while run:
-            clock.tick(1)  # Limit to 60 FPS
+            clock.tick(10)  # Limit to 60 FPS
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     run = False
@@ -86,7 +86,6 @@ class SnakeGame:
                 list(self.game_logic.get_immediate_danger()) +
                 list(self.game_logic.get_relative_apple_position(normalize=True))
             )
-            print(inputs)
             
             # Get neural network output (3 values: left, straight, right)
             output = net.activate(inputs)
@@ -110,6 +109,8 @@ class SnakeGame:
             from snake.snake import CELL_SIZE
             self.game.renderer.render(self.game.screen, self.game_logic.grid, CELL_SIZE)
             pygame.display.update()      
+        # Print final score when the run finishes
+        print("Test run finished. Final score:", self.game_logic.score)
         pygame.quit() 
         
     def train_ai(self, genome, config):
@@ -118,7 +119,7 @@ class SnakeGame:
         run = True
         steps = 0
         steps_since_apple = 0
-        max_steps_without_apple = 30  # Stop if no apple eaten in this many steps
+        max_steps_without_apple = 1000  # Stop if no apple eaten in this many steps
         min_distance_to_apple = float('inf')  # Track closest approach to apple
         
         while run:
@@ -169,9 +170,9 @@ class SnakeGame:
                 steps_since_apple += 1
             
             # Render the game
-            from snake.snake import CELL_SIZE
-            self.game.renderer.render(self.game.screen, self.game_logic.grid, CELL_SIZE)
-            pygame.display.update()
+            #from snake.snake import CELL_SIZE
+            #self.game.renderer.render(self.game.screen, self.game_logic.grid, CELL_SIZE)
+            #pygame.display.update()
             
             steps += 1
             
@@ -184,26 +185,31 @@ class SnakeGame:
                 self.calc_fitness(genome, self.game_logic.score, steps, min_distance_to_apple)
                 break
             
-    def calc_fitness(self, genome, score, steps, min_distance_to_apple=float('inf')):
-        """
-        Calculate fitness based on score, efficiency, and proximity to apple.
-        Rewards high score, low step count, and getting close to the apple.
-        """
-        fitness = score * 200
-        #fitness += steps * 1.5
-        
-        # Proximity bonus: reward for getting close to the apple
-        # Inverse of distance encourages approach behavior
-        if min_distance_to_apple != float('inf'):
-            # Grid is ~17x19, so max distance is ~36
-            # Convert distance to a bonus: closer = higher bonus
-            proximity_bonus = 100 / (1 + min_distance_to_apple)
-            fitness += proximity_bonus
-        
+    
+    def calc_fitness(self, genome, score, steps, min_distance_to_apple=float('inf'), previous_distance=float('inf')):
+        fitness = score * 1000  # eating apples is primary goal
+
+        # Efficiency bonus
+        if steps > 0:
+            fitness += (score / steps) * 100
+
+        # # Proximity bonus
+        if min_distance_to_apple != float('inf') and min_distance_to_apple > 0:
+            fitness += 500 / (1 + min_distance_to_apple)
+
+        # # Bonus for moving closer
+        if previous_distance > min_distance_to_apple:
+            fitness += 10
+
+        # Survival bonus (small)
+        fitness += steps * 0.1
+
+        # Penalty for doing nothing
         if score == 0:
             fitness -= 100
-  
+
         genome.fitness = fitness
+
         
 def eval_genomes(genomes, config):
     width, height = 588, 595
@@ -215,14 +221,14 @@ def eval_genomes(genomes, config):
         game.train_ai(genome, config)
         
 def run_neat(config):
-    p = neat.Checkpointer.restore_checkpoint('neat-checkpoint-114') # to resume from a checkpoint
+    #p = neat.Checkpointer.restore_checkpoint('neat-checkpoint-199') # to resume from a checkpoint
     p = neat.Population(config)
     p.add_reporter(neat.StdOutReporter(True))
     stats = neat.StatisticsReporter()
     p.add_reporter(stats)
-    p.add_reporter(neat.Checkpointer(5))
+    p.add_reporter(neat.Checkpointer(25))
     
-    winner = p.run(eval_genomes, 50)
+    winner = p.run(eval_genomes, 500) # number of generations
     
     with open('best_genome.pkl', 'wb') as f:
         pickle.dump(winner, f)

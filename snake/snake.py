@@ -57,7 +57,7 @@ class Game:
                 self.renderer.render(self.screen, self.game_logic.grid, CELL_SIZE)
                 self.renderer.render_start_screen(self.screen)
                 pygame.display.flip()
-                clock.tick(60)
+                clock.tick(10)
 
             # Main game loop
             while alive:
@@ -71,7 +71,7 @@ class Game:
                 alive = self.game_logic.snake_state()
                 self.renderer.render(self.screen, self.game_logic.grid, CELL_SIZE)
                 pygame.display.flip()
-                clock.tick(60)
+                clock.tick(10)
 
             # End game screen loop
             while not alive:
@@ -84,7 +84,7 @@ class Game:
                 self.renderer.render(self.screen, self.game_logic.grid, CELL_SIZE)
                 self.renderer.render_end_screen(self.screen)
                 pygame.display.flip()
-                clock.tick(60)
+                clock.tick(10)
 
 if __name__ == "__main__":
     screen = pygame.display.set_mode(SIZE)
